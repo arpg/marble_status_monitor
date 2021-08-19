@@ -12,15 +12,16 @@ using topic_tools::ShapeShifter;
 struct topicInfo
 {
     double freq_expected;
-    double freq_tol = 2.0;
+    double tolerance;
     bool initialized = false;
     bool is_publishing;
 
     ros::Time last_time;
     double curr_freq = 0.0;
 
-    topicInfo(double freq_ex)
-    : freq_expected(freq_ex)
+    topicInfo(double freq_ex, double tol)
+    : freq_expected(freq_ex),
+      tolerance(tol)
     {};
 };
 
@@ -41,6 +42,7 @@ void topicCallback(const ShapeShifter::ConstPtr& msg, const std::string& topic_n
         ros::Duration duration = curr_time - info->last_time;
         info->curr_freq = 1 / duration.toSec();
         info->last_time = curr_time;
+        ROS_INFO("freq: %f", info->curr_freq);
     }
 }
 
@@ -52,8 +54,8 @@ void monitorCallback(const ros::TimerEvent& event)
 
     for (const auto& t : topics) {
         topicInfo topic = t.second;
-        if ((topic.curr_freq > topic.freq_expected - topic.freq_tol) && 
-            (topic.curr_freq < topic.freq_expected + topic.freq_tol)) {
+        if ((topic.curr_freq > topic.freq_expected - topic.tolerance) && 
+            (topic.curr_freq < topic.freq_expected + topic.tolerance)) {
             correct_pub += 1;
         }
         else {
@@ -82,11 +84,15 @@ void loadFromConfig(ros::NodeHandle& nh, std::vector<ros::Subscriber>& subs)
         ROS_ASSERT(monitor_iter["expected_hz"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
         double expected_hz = monitor_iter["expected_hz"];
 
+        // verify publishing rate tolerance is type double
+        ROS_ASSERT(monitor_iter["tolerance"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
+        double tolerance = monitor_iter["tolerance"];
+
         // for debugging
         // ROS_INFO("Topic name: %s - expected rate: %f. ", topic_name.c_str(), expected_hz);
 
         // create new struct to hold topic information
-        topicInfo newTopic(expected_hz);
+        topicInfo newTopic(expected_hz, tolerance);
         topics.insert(std::pair<std::string, topicInfo> (topic_name, newTopic));
         
         // create callback for topic and add to subscriber list
@@ -96,7 +102,7 @@ void loadFromConfig(ros::NodeHandle& nh, std::vector<ros::Subscriber>& subs)
         {
             topicCallback(msg, topic_name, parser);
         };
-        ros::Subscriber sub = nh.subscribe(topic_name, 10, callback);
+        ros::Subscriber sub = nh.subscribe(topic_name, 1, callback);
         subs.push_back(sub);
     }
 }
