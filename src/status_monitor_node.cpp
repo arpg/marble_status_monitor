@@ -51,7 +51,6 @@ void monitorCallback(const ros::TimerEvent& event)
     if(!init) {
         printf("\033\143"); // This clears the terminal so it appears like it's updating instead of printing continuously
         int num_topics = topics.size();
-        string color;
         for (auto it = topics.begin(); it != topics.end(); ++it) {
             topicInfo* topic = &(it->second);
             topic->freq = topic->counter * print_rate;
@@ -70,7 +69,6 @@ void monitorCallback(const ros::TimerEvent& event)
     else {
         printf("\033\143"); // This clears the terminal so it appears like it's updating instead of printing continuously
         int num_topics = topics.size();
-        string color;
         for (auto it = topics.begin(); it != topics.end(); ++it) {
             topicInfo* topic = &(it->second);
             topic->freq = topic->counter * print_rate;
