@@ -1,83 +1,97 @@
 topic_list:
   - {
+      label: "CAMERA (B)",
       topic: "cam_back/image_rect_color",
       expected_hz: 10.0,
       tolerance: 1.0
     }
   
   - {
+      label: "CAMERA (F)",
       topic: "cam_front/image_rect_color",
       expected_hz: 10.0,
       tolerance: 1.0
     }
 
   - {
+      label: "CAMERA (L)",
       topic: "cam_left/image_rect_color",
       expected_hz: 10.0,
       tolerance: 1.0
     }
 
   - {
+      label: "CAMERA (R)",
       topic: "cam_right/image_rect_color",
       expected_hz: 10.0,
       tolerance: 1.0
     }
 
   - {
+      label: "MICROSTRAIN IMU",
       topic: "imu/data",
       expected_hz: 500.0, 
       tolerance: 5.0
     }
 
   - {
+      label: "OUSTER (H)",
       topic: "horiz/os_cloud_node/points",
       expected_hz: 20.0,
       tolerance: 2.0
     }
 
   - {
+      label: "OUSTER (V)",
       topic: "vert/os_cloud_node/points",
       expected_hz: 20.0,
       tolerance: 2.0
     }
 
   - {
+      label: "RPLIDAR SCAN",
       topic: "scan",
       expected_hz: 10.0,
       tolerance: 2.0
     }
 
   - {
+      label: "PICO (L)",
       topic: "pico_flexx_left/points",
       expected_hz: 5.0,
       tolerance: 1.0
     }
 
   - {
+      label: "PICO (R)",
       topic: "pico_flexx_right/points",
       expected_hz: 5.0,
       tolerance: 1.0
     }
 
   - {
+      label: "LOCALIZATION",
       topic: "lio_sam/mapping/odometry",
       expected_hz: 5.0,
       tolerance: 3.0
     }
 
   - {
+      label: "MARBLE MAPPING",
       topic: "merged_map",
       expected_hz: 1.0,
       tolerance: 0.5
     }
 
   - {
+      label: "PCL CONCAT",
       topic: "octomap_in",
       expected_hz: 12.0,
       tolerance: 8.0
     }
 
   - {
+      label: "PLANNING",
       topic: "scan_plan_node/path_out",
       expected_hz: 4.0,
       tolerance: 3.0
