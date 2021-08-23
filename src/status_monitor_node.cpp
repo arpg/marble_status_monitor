@@ -100,17 +100,17 @@ void monitorCallback(const ros::TimerEvent& event)
     // print topics publishing correctly
     if (!correct_pub_topics.empty())
         for (auto t : correct_pub_topics)
-            ROS_INFO("\033[1;32m  %s PASS\033[0m", t.c_str());
+            ROS_INFO("\033[1;32m  PASS %s \033[0m", t.c_str());
     
     // print topics not publishing correctly
     if (!incorrect_pub_topics.empty())
         for (auto t : incorrect_pub_topics)
-            ROS_INFO("\033[1;33m  %s FAIL\033[0m", t.c_str());
+            ROS_INFO("\033[1;31m  FAIL %s \033[0m", t.c_str());
 
     // print topics not publishing messages
     if (!no_msg_topics.empty())
         for (auto t : no_msg_topics)
-            ROS_INFO("\033[1;34m  %s NOT PUBLISHING\033[0m", t.c_str());
+            ROS_INFO("\033[1;31m  NAN  %s \033[0m", t.c_str());
 
     std::cout << "\n" << std::endl;
 }
