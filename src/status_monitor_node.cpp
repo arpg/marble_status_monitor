@@ -67,52 +67,27 @@ void topicCallback(const ShapeShifter::ConstPtr& msg, const std::string& topic_n
 
 void monitorCallback(const ros::TimerEvent& event)
 {   
+    ROS_INFO("\033\143"); // This clears the terminal so it appears like it's updating instead of printing continuously
     int num_topics = topics.size();
-    int correct_pub = 0;
-    std::vector<std::string> correct_pub_topics;
-    std::vector<std::string> incorrect_pub_topics;
-    std::vector<std::string> no_msg_topics;
-
+    std::string color;
     for (auto it = topics.begin(); it != topics.end(); ++it) {
         topicInfo* topic = &(it->second);
         topic->last_avg_freq = topic->avg_freq;
         double avg_freq = std::accumulate(topic->pub_times.begin(), topic->pub_times.end(), 0.0) / topic->pub_times.size();
-        if (isnan(avg_freq)) {
-            avg_freq = 0.0;
-            no_msg_topics.push_back(it->first);
-            continue;
-        }
         topic->avg_freq = avg_freq;
-        if ((topic->avg_freq > topic->freq_expected - topic->tolerance) && 
-            (topic->avg_freq < topic->freq_expected + topic->tolerance)) {
-            // ROS_INFO("%s publishing at %f", it->first.c_str(), topic->avg_freq);
+        if(isnan(avg_freq)) {
+            topic->avg_freq = 0.0;
+            ROS_INFO("\033[1;31m NO MSG\t%.1f\t%s\033[0m", topic->avg_freq, it->first.c_str());
+        }
+        else if((topic->avg_freq > topic->freq_expected + topic->tolerance) || 
+            (topic->avg_freq < topic->freq_expected - topic->tolerance)) {
+            ROS_INFO("\033[1;31m FAIL\t%.1f\t%s\033[0m", topic->avg_freq, it->first.c_str());
             topic->is_publishing = true;
-            correct_pub += 1;
-            correct_pub_topics.push_back(it->first);
         }
         else {
-            // ROS_INFO("%s publishing at %f", it->first.c_str(), topic->avg_freq);
-            incorrect_pub_topics.push_back(it->first);
+            ROS_INFO("\033[1;32m PASS\t%.1f\t%s\033[0m", topic->avg_freq, it->first.c_str());
         }
-        // topic->pub_times.clear();
     }
-
-    // print topics publishing correctly
-    if (!correct_pub_topics.empty())
-        for (auto t : correct_pub_topics)
-            ROS_INFO("\033[1;32m  PASS %s \033[0m", t.c_str());
-    
-    // print topics not publishing correctly
-    if (!incorrect_pub_topics.empty())
-        for (auto t : incorrect_pub_topics)
-            ROS_INFO("\033[1;31m  FAIL %s \033[0m", t.c_str());
-
-    // print topics not publishing messages
-    if (!no_msg_topics.empty())
-        for (auto t : no_msg_topics)
-            ROS_INFO("\033[1;31m  NAN  %s \033[0m", t.c_str());
-
-    std::cout << "\n" << std::endl;
 }
 
 void loadFromConfig(ros::NodeHandle& nh, std::vector<ros::Subscriber>& subs)

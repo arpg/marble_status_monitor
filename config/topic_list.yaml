@@ -1,22 +1,26 @@
 topic_list:
   - {
       topic: "cam_back/image_rect_color",
-      expected_hz: 15.0
+      expected_hz: 10.0,
+      tolerance: 1.0
     }
   
   - {
       topic: "cam_front/image_rect_color",
-      expected_hz: 15.0
+      expected_hz: 10.0,
+      tolerance: 1.0
     }
 
   - {
       topic: "cam_left/image_rect_color",
-      expected_hz: 15.0
+      expected_hz: 10.0,
+      tolerance: 1.0
     }
 
   - {
       topic: "cam_right/image_rect_color",
-      expected_hz: 15.0
+      expected_hz: 10.0,
+      tolerance: 1.0
     }
 
   - {
@@ -63,14 +67,14 @@ topic_list:
 
   - {
       topic: "merged_map",
-      expected_hz: 6.0,
-      tolerance: 5.0
+      expected_hz: 1.0,
+      tolerance: 0.5
     }
 
   - {
       topic: "octomap_in",
-      expected_hz: 6.0,
-      tolerance: 5.0
+      expected_hz: 12.0,
+      tolerance: 8.0
     }
 
   - {
