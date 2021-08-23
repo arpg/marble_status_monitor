@@ -20,10 +20,11 @@ struct topicInfo
 
     ros::Time last_time;
     ros::Time curr_time;
-    double last_avg_freq = 0.0;
-    double avg_freq = 0.0;
+    double last_freq = 0.0;
+    double freq = 0.0;
     double curr_freq = 0.0;
     int horizon = 100;
+    int counter = 0;
     // std::vector<double> pub_times = std::vector<double>(horizon);
     std::vector<double> pub_times; // has to be a better way to do this
     
@@ -33,8 +34,9 @@ struct topicInfo
     {};
 };
 
-XmlRpc::XmlRpcValue monitor_list;
+int init;
 std::string vehicle_name;
+XmlRpc::XmlRpcValue topic_list;
 std::map<std::string, topicInfo> topics;
 
 void topicCallback(const ShapeShifter::ConstPtr& msg, const std::string& topic_name,
@@ -42,58 +44,45 @@ void topicCallback(const ShapeShifter::ConstPtr& msg, const std::string& topic_n
 {
     std::map<std::string, topicInfo>::iterator it = topics.find(topic_name);
     auto info = &(it->second);
-    if (!info->initialized) {
-        // check if topic has been initialized
-        info->last_time = ros::Time::now();
-        info->initialized = true;
-    }
-    else {
-        // if topic has been initialized then calculate publishing rate statistics
-        info->last_avg_freq = info->avg_freq;
-        ros::Time curr_time = ros::Time::now();
-        ros::Duration duration = curr_time - info->last_time;
-        double curr_freq = 1 / duration.toSec();
-        // check if pub_times vector is equal to horizon length
-        if (info->pub_times.size() == info->horizon) {
-            info->pub_times.erase(info->pub_times.begin());
-            info->pub_times.push_back(curr_freq);
-        }
-        else
-            info->pub_times.push_back(curr_freq);
-        info->curr_freq = curr_freq;
-        info->last_time = curr_time;
-    }
+    info->counter++;
 }
 
 void monitorCallback(const ros::TimerEvent& event)
 {   
+    if(init < 10)
+    {
+        init++;
+    ROS_INFO("\033\143"); // This clears the terminal so it appears like it's updating instead of printing continuously
+    }
+    else{
+        
     ROS_INFO("\033\143"); // This clears the terminal so it appears like it's updating instead of printing continuously
     int num_topics = topics.size();
     std::string color;
     for (auto it = topics.begin(); it != topics.end(); ++it) {
         topicInfo* topic = &(it->second);
-        topic->last_avg_freq = topic->avg_freq;
-        double avg_freq = std::accumulate(topic->pub_times.begin(), topic->pub_times.end(), 0.0) / topic->pub_times.size();
-        topic->avg_freq = avg_freq;
-        if(isnan(avg_freq)) {
-            topic->avg_freq = 0.0;
-            ROS_INFO("\033[1;31m NO MSG\t%.1f\t%s\033[0m", topic->avg_freq, it->first.c_str());
+        topic->freq = topic->counter;
+        if(isnan(topic->freq)) {
+            topic->freq = 0.0;
+            ROS_INFO("\033[1;31m NO MSG\t%.1f\t%s\033[0m", topic->freq, it->first.c_str());
         }
-        else if((topic->avg_freq > topic->freq_expected + topic->tolerance) || 
-            (topic->avg_freq < topic->freq_expected - topic->tolerance)) {
-            ROS_INFO("\033[1;31m FAIL\t%.1f\t%s\033[0m", topic->avg_freq, it->first.c_str());
+        else if((topic->freq > topic->freq_expected + topic->tolerance) || 
+            (topic->freq < topic->freq_expected - topic->tolerance)) {
+            ROS_INFO("\033[1;31m FAIL\t%.1f\t%s\033[0m", topic->freq, it->first.c_str());
             topic->is_publishing = true;
         }
         else {
-            ROS_INFO("\033[1;32m PASS\t%.1f\t%s\033[0m", topic->avg_freq, it->first.c_str());
+            ROS_INFO("\033[1;32m PASS\t%.1f\t%s\033[0m", topic->freq, it->first.c_str());
         }
+        topic->counter = 0;
+    }
     }
 }
 
 void loadFromConfig(ros::NodeHandle& nh, std::vector<ros::Subscriber>& subs)
 {
-    for (int i = 0; i < monitor_list.size(); i++) {
-        XmlRpc::XmlRpcValue monitor_iter = monitor_list[i];
+    for (int i = 0; i < topic_list.size(); i++) {
+        XmlRpc::XmlRpcValue monitor_iter = topic_list[i];
         ROS_ASSERT(monitor_iter.getType() == XmlRpc::XmlRpcValue::TypeStruct);
 
         // verify topic name is type string 
@@ -128,12 +117,9 @@ void loadFromConfig(ros::NodeHandle& nh, std::vector<ros::Subscriber>& subs)
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "status_monitor");
-    ROS_INFO("\033[1;34m----> Topic monitor started <----\033[0m");
     ros::NodeHandle nh;
     nh.getParam("vehicle_name", vehicle_name);
-    nh.getParam("topic_list", monitor_list);
-    ROS_INFO("\033[1;35mMonitoring %d topics \033[0m", monitor_list.size());
-
+    nh.getParam("topic_list", topic_list);
     std::vector<ros::Subscriber> topic_subs;
     loadFromConfig(nh, topic_subs);
 

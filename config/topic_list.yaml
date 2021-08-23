@@ -62,7 +62,7 @@ topic_list:
   - {
       topic: "lio_sam/mapping/odometry",
       expected_hz: 5.0,
-      tolerance: 1.0
+      tolerance: 3.0
     }
 
   - {
