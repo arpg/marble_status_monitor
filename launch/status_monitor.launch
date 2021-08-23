@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
 
 <launch>
-	<!-- <include file="$(find pub_sub)/launch/pub_sub.launch" /> -->
-
-    <!-- <rosparam command="load" file="$(find marble_status_monitor)/config/test_config.yaml" /> -->
-	<rosparam command="load" file="$(find marble_status_monitor)/config/H02_topics.yaml" />
+  <!-- <rosparam command="load" file="$(find marble_status_monitor)/config/test_config.yaml" /> -->
+	<rosparam command="load" file="$(find marble_status_monitor)/config/H01_topics.yaml" />
+	<!-- <rosparam command="load" file="$(find marble_status_monitor)/config/H02_topics.yaml" /> -->
 	
 	<node name="status_monitor_node" pkg="marble_status_monitor" type="status_monitor_node" output="screen" />
 </launch>

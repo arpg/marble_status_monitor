@@ -1,0 +1,59 @@
+H01_topics:
+  # - {
+  #     topic: "/H01/imu/data",
+  #     expected_hz: 500.0, 
+  #     tolerance: 5.0
+  #   }
+
+  # - {
+  #     topic: "/H01/horiz/os_cloud_node/points",
+  #     expected_hz: 20.0,
+  #     tolerance: 2.0
+  #   }
+
+  # - {
+  #     topic: "/H01/vert/os_cloud_node/points",
+  #     expected_hz: 20.0,
+  #     tolerance: 2.0
+  #   }
+
+  - {
+      topic: "/H01/scan",
+      expected_hz: 10.0,
+      tolerance: 1.0
+    }
+
+  - {
+      topic: "/H01/planned_path",
+      expected_hz: 4.5,
+      tolerance: 1.0
+    }
+
+  - {
+      topic: "/H01/merged_map",
+      expected_hz: 5.5,
+      tolerance: 1.0
+    }
+
+  - {
+      topic: "/H01/lio_sam/mapping/odometry",
+      expected_hz: 5.5, 
+      tolerance: 1.0
+    }
+
+  - {
+      topic: "/H01/path_follower/lookahead_point",
+      expected_hz: 20.0,
+      tolerance: 1.0
+    }
+
+  - {
+      topic: "/H01/joy",
+      expected_hz: 20.0, 
+      tolerance: 1.0
+    }
+
+  # - {
+  #     topic: "/H02/scan_plan_node/path_out",
+  #     expected_hz: 
+  #   }

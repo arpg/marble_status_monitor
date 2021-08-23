@@ -19,14 +19,14 @@ H02_topics:
   #     expected_hz: 15.0
   #   }
 
-  # - {
-  #     topic: "/H01/imu/data",
-  #     expected_hz: 500.0, 
-  #     tolerance: 5.0
-  #   }
+  - {
+      topic: "/H02/imu/data",
+      expected_hz: 500.0, 
+      tolerance: 5.0
+    }
 
   - {
-      topic: "/H01/horiz/os_cloud_node/points",
+      topic: "/H02/horiz/os_cloud_node/points",
       expected_hz: 20.0,
       tolerance: 2.0
     }
