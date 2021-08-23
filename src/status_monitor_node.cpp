@@ -34,6 +34,7 @@ struct topicInfo
 };
 
 XmlRpc::XmlRpcValue monitor_list;
+std::string vehicle_name;
 std::map<std::string, topicInfo> topics;
 
 void topicCallback(const ShapeShifter::ConstPtr& msg, const std::string& topic_name,
@@ -99,12 +100,12 @@ void monitorCallback(const ros::TimerEvent& event)
     // print topics publishing correctly
     if (!correct_pub_topics.empty())
         for (auto t : correct_pub_topics)
-            ROS_INFO("\033[1;32m  %s OK\033[0m", t.c_str());
+            ROS_INFO("\033[1;32m  %s PASS\033[0m", t.c_str());
     
     // print topics not publishing correctly
     if (!incorrect_pub_topics.empty())
         for (auto t : incorrect_pub_topics)
-            ROS_INFO("\033[1;33m  %s NOT OK\033[0m", t.c_str());
+            ROS_INFO("\033[1;33m  %s FAIL\033[0m", t.c_str());
 
     // print topics not publishing messages
     if (!no_msg_topics.empty())
@@ -123,6 +124,7 @@ void loadFromConfig(ros::NodeHandle& nh, std::vector<ros::Subscriber>& subs)
         // verify topic name is type string 
         ROS_ASSERT(monitor_iter["topic"].getType() == XmlRpc::XmlRpcValue::TypeString);
         std::string topic_name = monitor_iter["topic"];
+		topic_name = "/" + vehicle_name + "/" + topic_name;
 
         // verify expected publishing rate is type double
         ROS_ASSERT(monitor_iter["expected_hz"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
@@ -153,8 +155,8 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "status_monitor");
     ROS_INFO("\033[1;34m----> Topic monitor started <----\033[0m");
     ros::NodeHandle nh;
-    // nh.getParam("pub_sub", monitor_list);
-    nh.getParam("H01_topics", monitor_list);
+    nh.getParam("vehicle_name", vehicle_name);
+    nh.getParam("topic_list", monitor_list);
     ROS_INFO("\033[1;35mMonitoring %d topics \033[0m", monitor_list.size());
 
     std::vector<ros::Subscriber> topic_subs;
