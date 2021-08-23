@@ -122,7 +122,7 @@ void loadFromConfig(ros::NodeHandle& nh, vector<ros::Subscriber>& subs)
         {
             topicCallback(msg, topic_name, parser);
         };
-        ros::Subscriber sub = nh.subscribe(topic_name, 10, callback);
+        ros::Subscriber sub = nh.subscribe(topic_name, 1, callback);
         subs.push_back(sub);
     }
 }
