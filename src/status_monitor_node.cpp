@@ -84,32 +84,32 @@ void monitorCallback(const ros::TimerEvent& event)
         topic->avg_freq = avg_freq;
         if ((topic->avg_freq > topic->freq_expected - topic->tolerance) && 
             (topic->avg_freq < topic->freq_expected + topic->tolerance)) {
-            ROS_INFO("%s publishing at %f", it->first.c_str(), topic->avg_freq);
+            // ROS_INFO("%s publishing at %f", it->first.c_str(), topic->avg_freq);
             topic->is_publishing = true;
             correct_pub += 1;
             correct_pub_topics.push_back(it->first);
         }
         else {
-            ROS_INFO("%s publishing at %f", it->first.c_str(), topic->avg_freq);
+            // ROS_INFO("%s publishing at %f", it->first.c_str(), topic->avg_freq);
             incorrect_pub_topics.push_back(it->first);
         }
         // topic->pub_times.clear();
     }
 
-    // // print topics publishing correctly
-    // if (!correct_pub_topics.empty())
-    //     for (auto t : correct_pub_topics)
-    //         ROS_INFO("\033[1;32m  %s OK\033[0m", t.c_str());
+    // print topics publishing correctly
+    if (!correct_pub_topics.empty())
+        for (auto t : correct_pub_topics)
+            ROS_INFO("\033[1;32m  %s OK\033[0m", t.c_str());
     
-    // // print topics not publishing correctly
-    // if (!incorrect_pub_topics.empty())
-    //     for (auto t : incorrect_pub_topics)
-    //         ROS_INFO("\033[1;33m  %s NOT OK\033[0m", t.c_str());
+    // print topics not publishing correctly
+    if (!incorrect_pub_topics.empty())
+        for (auto t : incorrect_pub_topics)
+            ROS_INFO("\033[1;33m  %s NOT OK\033[0m", t.c_str());
 
-    // // print topics not publishing messages
-    // if (!no_msg_topics.empty())
-    //     for (auto t : no_msg_topics)
-    //         ROS_INFO("\033[1;34m  %s NOT PUBLISHING\033[0m", t.c_str());
+    // print topics not publishing messages
+    if (!no_msg_topics.empty())
+        for (auto t : no_msg_topics)
+            ROS_INFO("\033[1;34m  %s NOT PUBLISHING\033[0m", t.c_str());
 
     std::cout << "\n" << std::endl;
 }
