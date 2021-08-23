@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <numeric>
+#include <iomanip>
 
 using namespace RosIntrospection;
 using topic_tools::ShapeShifter;
@@ -14,11 +16,17 @@ struct topicInfo
     double freq_expected;
     double tolerance;
     bool initialized = false;
-    bool is_publishing;
+    bool is_publishing = false;
 
     ros::Time last_time;
+    ros::Time curr_time;
+    double last_avg_freq = 0.0;
+    double avg_freq = 0.0;
     double curr_freq = 0.0;
-
+    int horizon = 100;
+    // std::vector<double> pub_times = std::vector<double>(horizon);
+    std::vector<double> pub_times; // has to be a better way to do this
+    
     topicInfo(double freq_ex, double tol)
     : freq_expected(freq_ex),
       tolerance(tol)
@@ -34,15 +42,26 @@ void topicCallback(const ShapeShifter::ConstPtr& msg, const std::string& topic_n
     std::map<std::string, topicInfo>::iterator it = topics.find(topic_name);
     auto info = &(it->second);
     if (!info->initialized) {
+        // check if topic has been initialized
         info->last_time = ros::Time::now();
         info->initialized = true;
     }
     else {
+        // if topic has been initialized then calculate publishing rate statistics
+        info->last_avg_freq = info->avg_freq;
         ros::Time curr_time = ros::Time::now();
         ros::Duration duration = curr_time - info->last_time;
-        info->curr_freq = 1 / duration.toSec();
+        double curr_freq = 1 / duration.toSec();
+        // check if pub_times vector is equal to horizon length
+        if (info->pub_times.size() == info->horizon) {
+            info->pub_times.erase(info->pub_times.begin());
+            info->pub_times.push_back(curr_freq);
+        }
+        else
+            info->pub_times.push_back(curr_freq);
+        info->curr_freq = curr_freq;
         info->last_time = curr_time;
-        ROS_INFO("freq: %f", info->curr_freq);
+        // ROS_INFO("freq: %f", info->curr_freq);
     }
 }
 
@@ -50,24 +69,50 @@ void monitorCallback(const ros::TimerEvent& event)
 {   
     int num_topics = topics.size();
     int correct_pub = 0;
+    std::vector<std::string> correct_pub_topics;
     std::vector<std::string> incorrect_pub_topics;
+    std::vector<std::string> no_msg_topics;
 
-    for (const auto& t : topics) {
-        topicInfo topic = t.second;
-        if ((topic.curr_freq > topic.freq_expected - topic.tolerance) && 
-            (topic.curr_freq < topic.freq_expected + topic.tolerance)) {
+    for (auto it = topics.begin(); it != topics.end(); ++it) {
+        topicInfo* topic = &(it->second);
+        topic->last_avg_freq = topic->avg_freq;
+        double avg_freq = std::accumulate(topic->pub_times.begin(), topic->pub_times.end(), 0.0) / topic->pub_times.size();
+        if (isnan(avg_freq)) {
+            avg_freq = 0.0;
+            no_msg_topics.push_back(it->first);
+            continue;
+        }
+        topic->avg_freq = avg_freq;
+        if ((topic->avg_freq > topic->freq_expected - topic->tolerance) && 
+            (topic->avg_freq < topic->freq_expected + topic->tolerance)) {
+            // ROS_INFO("%s publishing at %f", it->first.c_str(), topic->avg_freq);
+            topic->is_publishing = true;
             correct_pub += 1;
+            correct_pub_topics.push_back(it->first);
         }
         else {
-            incorrect_pub_topics.push_back(t.first);
+            // ROS_INFO("%s publishing at %f", it->first.c_str(), topic->avg_freq);
+            incorrect_pub_topics.push_back(it->first);
         }
+        // topic->pub_times.clear();
     }
-    ROS_INFO("\033[1;32m%i / %i topics publishing correctly\033[0m", correct_pub, num_topics);
-    if (correct_pub != num_topics) {
-        ROS_INFO("\033[1;33m--> Topics not publishing correctly:\033[0m");
+
+    // print topics publishing correctly
+    if (!correct_pub_topics.empty())
+        for (auto t : correct_pub_topics)
+            ROS_INFO("\033[1;32m  %s OK\033[0m", t.c_str());
+    
+    // print topics not publishing correctly
+    if (!incorrect_pub_topics.empty())
         for (auto t : incorrect_pub_topics)
-            ROS_INFO("\033[1;33m    %s\033[0m", t.c_str());
-    }
+            ROS_INFO("\033[1;33m  %s NOT OK\033[0m", t.c_str());
+
+    // print topics not publishing messages
+    if (!no_msg_topics.empty())
+        for (auto t : no_msg_topics)
+            ROS_INFO("\033[1;34m  %s NOT PUBLISHING\033[0m", t.c_str());
+
+    std::cout << "\n" << std::endl;
 }
 
 void loadFromConfig(ros::NodeHandle& nh, std::vector<ros::Subscriber>& subs)
@@ -87,9 +132,6 @@ void loadFromConfig(ros::NodeHandle& nh, std::vector<ros::Subscriber>& subs)
         // verify publishing rate tolerance is type double
         ROS_ASSERT(monitor_iter["tolerance"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
         double tolerance = monitor_iter["tolerance"];
-
-        // for debugging
-        // ROS_INFO("Topic name: %s - expected rate: %f. ", topic_name.c_str(), expected_hz);
 
         // create new struct to hold topic information
         topicInfo newTopic(expected_hz, tolerance);
@@ -113,7 +155,7 @@ int main(int argc, char** argv)
     ROS_INFO("\033[1;34m----> Topic monitor started <----\033[0m");
     ros::NodeHandle nh;
     // nh.getParam("pub_sub", monitor_list);
-    nh.getParam("H02_topics", monitor_list);
+    nh.getParam("H01_topics", monitor_list);
     ROS_INFO("\033[1;35mMonitoring %d topics \033[0m", monitor_list.size());
 
     std::vector<ros::Subscriber> topic_subs;
