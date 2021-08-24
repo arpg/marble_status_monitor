@@ -31,7 +31,7 @@ topic_list:
       label: "MICROSTRAIN IMU",
       topic: "imu/data",
       expected_hz: 500.0, 
-      tolerance: 5.0
+      tolerance: 20.0
     }
 
   - {
@@ -92,7 +92,8 @@ topic_list:
 
   - {
       label: "PLANNING",
-      topic: "scan_plan_node/path_out",
-      expected_hz: 4.0,
-      tolerance: 3.0
+      topic: "scan_plan_node/compute_time_out",
+      expected_hz: 5.0,
+      tolerance: 4.0
     }
+

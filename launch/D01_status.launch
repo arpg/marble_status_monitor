@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<launch>
+
+<arg name="vehicle_name" default="D01"/>
+
+<group ns="$(arg vehicle_name)">
+	<!-- <include file="$(find pub_sub)/launch/pub_sub.launch" /> -->
+    <param name="vehicle_name" value="$(arg vehicle_name)" />
+    <param name="print_rate" value="0.5" />
+	<rosparam command="load" file="$(find marble_status_monitor)/config/Spot_topic_list.yaml" />
+	
+	<node name="status_monitor_node" pkg="marble_status_monitor" type="status_monitor_node" output="screen" />
+</group>
+</launch>
